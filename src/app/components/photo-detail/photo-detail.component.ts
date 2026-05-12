@@ -10,30 +10,25 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { DatePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { Photo } from '../../models/photo.model';
-import { PhotoStorageService } from '../../services/photo-storage.service';
 import { EmailDialogComponent, EmailDialogData } from '../email-dialog/email-dialog.component';
 
 @Component({
   selector: 'app-photo-detail',
   standalone: true,
-  imports: [DatePipe, MatButtonModule, MatIconModule, MatToolbarModule],
+  imports: [MatButtonModule, MatIconModule, MatToolbarModule],
   templateUrl: './photo-detail.component.html',
   styleUrl: './photo-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PhotoDetailComponent implements OnChanges, OnDestroy {
-  @Input({ required: true }) photo!: Photo;
+  @Input({ required: true }) blob!: Blob;
   @Output() readonly back = new EventEmitter<void>();
-  @Output() readonly deleted = new EventEmitter<number>();
 
-  private readonly storage = inject(PhotoStorageService);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
 
@@ -41,9 +36,9 @@ export class PhotoDetailComponent implements OnChanges, OnDestroy {
   private currentObjectUrl: string | null = null;
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['photo'] && this.photo) {
+    if (changes['blob'] && this.blob) {
       this.revoke();
-      const url = URL.createObjectURL(this.photo.blob);
+      const url = URL.createObjectURL(this.blob);
       this.currentObjectUrl = url;
       this.imageUrl.set(url);
     }
@@ -60,17 +55,35 @@ export class PhotoDetailComponent implements OnChanges, OnDestroy {
     }
   }
 
-  async delete(): Promise<void> {
-    if (!confirm('Supprimer cette photo ?')) return;
-    const id = this.photo.id;
-    await this.storage.remove(id);
-    this.snackBar.open('Photo supprimée', 'OK', { duration: 1800 });
-    this.deleted.emit(id);
+  async saveToGallery(): Promise<void> {
+    const filename = `photo_${Date.now()}.jpg`;
+    const type = this.blob.type || 'image/jpeg';
+    const file = new File([this.blob], filename, { type });
+
+    if (navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: 'Photo' });
+        this.snackBar.open('Photo enregistrée', 'OK', { duration: 2000 });
+        return;
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name === 'AbortError') return;
+      }
+    }
+
+    const url = URL.createObjectURL(this.blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    this.snackBar.open('Photo téléchargée', 'OK', { duration: 2000 });
   }
 
   openEmail(): void {
     this.dialog.open<EmailDialogComponent, EmailDialogData, boolean>(EmailDialogComponent, {
-      data: { photo: this.photo },
+      data: { blob: this.blob },
       width: '420px',
       maxWidth: '95vw',
     });

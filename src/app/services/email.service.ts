@@ -1,5 +1,4 @@
-import { inject, Injectable } from '@angular/core';
-import { SettingsService } from './settings.service';
+import { Injectable } from '@angular/core';
 
 export interface SendPhotoParams {
   blob: Blob;
@@ -10,8 +9,6 @@ export interface SendPhotoParams {
 
 @Injectable({ providedIn: 'root' })
 export class EmailService {
-  private readonly settingsService = inject(SettingsService);
-
   private blobToBase64(blob: Blob): Promise<string> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -28,7 +25,6 @@ export class EmailService {
     if (!to) throw new Error('Destinataire requis');
 
     const photoBase64 = await this.blobToBase64(blob);
-    const settings = this.settingsService.settings();
 
     const response = await fetch('/api/send-email', {
       method: 'POST',
@@ -37,7 +33,7 @@ export class EmailService {
         to,
         subject: subject || 'Photo',
         message: message || '',
-        fromName: settings.fromName || 'Photo User',
+        fromName: 'Photo PWA',
         photoBase64,
         photoFilename: `photo_${Date.now()}.jpg`,
       }),

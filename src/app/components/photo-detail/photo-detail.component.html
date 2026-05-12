@@ -2,7 +2,6 @@
   <button mat-icon-button (click)="back.emit()" aria-label="Retour">
     <mat-icon>arrow_back</mat-icon>
   </button>
-  <span>Photo</span>
 </mat-toolbar>
 
 <div class="detail-page">
@@ -10,14 +9,12 @@
     <img [src]="imageUrl()" alt="Photo" />
   </div>
 
-  <p class="date">{{ photo.createdAt | date: 'dd/MM/yyyy HH:mm' }}</p>
-
   <div class="detail-actions">
-    <button mat-stroked-button color="warn" (click)="delete()">
-      <mat-icon>delete</mat-icon>
-      Supprimer
+    <button mat-flat-button color="primary" (click)="saveToGallery()">
+      <mat-icon>save_alt</mat-icon>
+      Enregistrer dans la pellicule
     </button>
-    <button mat-flat-button color="primary" (click)="openEmail()">
+    <button mat-stroked-button (click)="openEmail()">
       <mat-icon>mail</mat-icon>
       Envoyer par email
     </button>

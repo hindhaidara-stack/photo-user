@@ -1,32 +1,21 @@
 @switch (view()) {
   @case ('home') {
-    <mat-toolbar color="primary">
-      <span class="title">Photo User</span>
-      <span class="spacer"></span>
-      @if (canInstall()) {
+    @if (canInstall()) {
+      <mat-toolbar color="primary">
+        <span class="spacer"></span>
         <button mat-icon-button (click)="install()" aria-label="Installer l'application">
           <mat-icon>install_mobile</mat-icon>
         </button>
-      }
-      <button mat-icon-button (click)="openSettings()" aria-label="Paramètres">
-        <mat-icon>settings</mat-icon>
-      </button>
-    </mat-toolbar>
-    <app-home (takePhoto)="openCamera()" (openPhoto)="openPhoto($event)" />
+      </mat-toolbar>
+    }
+    <app-home (takePhoto)="openCamera()" />
   }
   @case ('camera') {
     <app-camera (captured)="onCaptured($event)" (closed)="onCameraClosed()" />
   }
   @case ('detail') {
-    @if (selectedPhoto(); as photo) {
-      <app-photo-detail
-        [photo]="photo"
-        (back)="backToHome()"
-        (deleted)="onPhotoDeleted()"
-      />
+    @if (currentBlob(); as blob) {
+      <app-photo-detail [blob]="blob" (back)="backToHome()" />
     }
-  }
-  @case ('settings') {
-    <app-settings (back)="backToHome()" />
   }
 }

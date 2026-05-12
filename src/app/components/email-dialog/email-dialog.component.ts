@@ -11,11 +11,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { EmailService } from '../../services/email.service';
-import { SettingsService } from '../../services/settings.service';
-import { Photo } from '../../models/photo.model';
 
 export interface EmailDialogData {
-  photo: Photo;
+  blob: Blob;
 }
 
 @Component({
@@ -36,12 +34,11 @@ export class EmailDialogComponent {
   private readonly data = inject<EmailDialogData>(MAT_DIALOG_DATA);
   private readonly dialogRef = inject(MatDialogRef<EmailDialogComponent, boolean>);
   private readonly emailService = inject(EmailService);
-  private readonly settingsService = inject(SettingsService);
   private readonly snackBar = inject(MatSnackBar);
 
-  readonly to = signal(this.settingsService.settings().defaultTo);
+  readonly to = signal('');
   readonly subject = signal('Photo');
-  readonly message = signal('Voici la photo prise depuis Photo User.');
+  readonly message = signal('');
   readonly sending = signal(false);
 
   async send(): Promise<void> {
@@ -53,7 +50,7 @@ export class EmailDialogComponent {
     this.sending.set(true);
     try {
       await this.emailService.sendPhoto({
-        blob: this.data.photo.blob,
+        blob: this.data.blob,
         to,
         subject: this.subject().trim(),
         message: this.message().trim(),
@@ -62,9 +59,7 @@ export class EmailDialogComponent {
       this.dialogRef.close(true);
     } catch (err: unknown) {
       const detail =
-        (err as { text?: string; message?: string })?.text ??
-        (err as { message?: string })?.message ??
-        'Erreur inconnue';
+        (err as { message?: string })?.message ?? 'Erreur inconnue';
       this.snackBar.open(`Échec de l'envoi : ${detail}`, 'OK', { duration: 4000 });
     } finally {
       this.sending.set(false);
