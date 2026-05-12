@@ -1,0 +1,10 @@
+.email-form {
+  display: flex;
+  flex-direction: column;
+  min-width: 280px;
+  padding-top: 8px;
+}
+
+mat-form-field {
+  width: 100%;
+}

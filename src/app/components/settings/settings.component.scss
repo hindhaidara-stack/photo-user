@@ -1,0 +1,27 @@
+.settings-page {
+  padding: 16px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.hint {
+  margin: 0 0 16px;
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 14px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}

@@ -1,0 +1,20 @@
+<div class="camera-host">
+  <video #video class="camera-video" playsinline muted autoplay></video>
+  <canvas #canvas class="camera-canvas" hidden></canvas>
+
+  <div class="camera-top">
+    <button mat-icon-button class="camera-btn" aria-label="Fermer" (click)="close()">
+      <mat-icon>close</mat-icon>
+    </button>
+    <button mat-icon-button class="camera-btn" aria-label="Changer de caméra" (click)="switchCamera()">
+      <mat-icon>cameraswitch</mat-icon>
+    </button>
+  </div>
+
+  <div class="camera-bottom">
+    <button mat-fab extended color="primary" class="shutter" aria-label="Capturer" (click)="capture()">
+      <mat-icon>camera</mat-icon>
+      Capturer
+    </button>
+  </div>
+</div>
