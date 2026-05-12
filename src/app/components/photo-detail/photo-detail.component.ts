@@ -52,14 +52,63 @@ export class PhotoDetailComponent implements OnChanges, OnDestroy {
     }
   }
 
+  private isIOS(): boolean {
+    const ua = navigator.userAgent;
+    return /iPad|iPhone|iPod/.test(ua) ||
+      // iPad sous iPadOS s'identifie comme MacIntel avec touch
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }
+
   /**
-   * Sauvegarde directe : declenche un telechargement.
-   * Android : la photo va dans /Downloads, Google Photos l'indexe et l'affiche dans la galerie.
-   * iOS Safari : la photo va dans l'app Fichiers (Apple ne permet pas d'ajouter directement
-   * a Photos depuis une PWA — il faudrait passer par "Partager > Enregistrer l'image").
-   * Desktop : telechargement classique.
+   * Enregistre la photo dans la pellicule.
+   * - Android / desktop : telechargement direct (Android Photos indexe /Downloads automatiquement)
+   * - iOS : ouvre le menu de partage natif car Apple n'autorise pas l'ecriture directe
+   *         dans Photos depuis une PWA — il faut choisir "Enregistrer l'image" dans le menu.
    */
-  saveToGallery(): void {
+  async saveToGallery(): Promise<void> {
+    if (this.isIOS()) {
+      await this.openShareMenu('Photo enregistrée');
+      return;
+    }
+    this.triggerDownload();
+    this.snackBar.open('Photo enregistrée', 'OK', { duration: 2000 });
+  }
+
+  /**
+   * Ouvre le menu natif de partage : WhatsApp, Mail, Drive, etc.
+   */
+  async share(): Promise<void> {
+    await this.openShareMenu();
+  }
+
+  delete(): void {
+    if (!confirm('Supprimer cette photo ?')) return;
+    this.snackBar.open('Photo supprimée', 'OK', { duration: 1800 });
+    this.back.emit();
+  }
+
+  private async openShareMenu(successMessage?: string): Promise<void> {
+    const filename = `photo_${Date.now()}.jpg`;
+    const type = this.blob.type || 'image/jpeg';
+    const file = new File([this.blob], filename, { type });
+
+    if (navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: 'Photo' });
+        if (successMessage) {
+          this.snackBar.open(successMessage, 'OK', { duration: 2000 });
+        }
+        return;
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name === 'AbortError') return;
+      }
+    } else {
+      this.snackBar.open('Partage non disponible — photo téléchargée', 'OK', { duration: 2500 });
+    }
+    this.triggerDownload();
+  }
+
+  private triggerDownload(): void {
     const filename = `photo_${Date.now()}.jpg`;
     const url = URL.createObjectURL(this.blob);
     const a = document.createElement('a');
@@ -70,42 +119,5 @@ export class PhotoDetailComponent implements OnChanges, OnDestroy {
     a.click();
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-    this.snackBar.open('Photo enregistrée', 'OK', { duration: 2000 });
-  }
-
-  /**
-   * Ouvre le menu natif de partage : WhatsApp, Mail, Drive, etc.
-   * Sur desktop, retombe sur un telechargement.
-   */
-  async share(): Promise<void> {
-    const filename = `photo_${Date.now()}.jpg`;
-    const type = this.blob.type || 'image/jpeg';
-    const file = new File([this.blob], filename, { type });
-
-    if (navigator.canShare?.({ files: [file] })) {
-      try {
-        await navigator.share({ files: [file], title: 'Photo' });
-        return;
-      } catch (err: unknown) {
-        if (err instanceof Error && err.name === 'AbortError') return;
-      }
-    } else {
-      this.snackBar.open('Partage non disponible — photo téléchargée', 'OK', { duration: 2500 });
-    }
-
-    const url = URL.createObjectURL(this.blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  }
-
-  delete(): void {
-    if (!confirm('Supprimer cette photo ?')) return;
-    this.snackBar.open('Photo supprimée', 'OK', { duration: 1800 });
-    this.back.emit();
   }
 }
