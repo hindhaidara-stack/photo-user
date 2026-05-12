@@ -10,13 +10,9 @@
   </div>
 
   <div class="detail-actions">
-    <button mat-flat-button color="primary" (click)="saveToGallery()">
-      <mat-icon>save_alt</mat-icon>
-      Enregistrer dans la pellicule
-    </button>
-    <button mat-stroked-button (click)="share()">
-      <mat-icon>share</mat-icon>
-      Partager
+    <button mat-flat-button color="primary" (click)="saveOrShare()">
+      <mat-icon>ios_share</mat-icon>
+      Enregistrer ou Partager
     </button>
     <button mat-stroked-button color="warn" class="delete-btn" (click)="delete()">
       <mat-icon>delete</mat-icon>

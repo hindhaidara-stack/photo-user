@@ -1,4 +1,26 @@
 <div class="home-page">
+  @if (thumbs().length > 0) {
+    <section class="gallery-section">
+      <h2 class="gallery-title">
+        Mes photos <span class="count">({{ count() }})</span>
+      </h2>
+      <div class="gallery-grid">
+        @for (t of thumbs(); track t.id) {
+          <button
+            type="button"
+            class="thumb"
+            [title]="t.createdAt | date: 'dd/MM/yyyy HH:mm'"
+            (click)="openPhoto.emit(t.id)"
+          >
+            <img [src]="t.url" alt="Photo" loading="lazy" />
+          </button>
+        }
+      </div>
+    </section>
+  } @else {
+    <p class="empty">Aucune photo pour l'instant. Prends ta première !</p>
+  }
+
   <button mat-fab extended color="primary" class="capture" (click)="takePhoto.emit()">
     <mat-icon>photo_camera</mat-icon>
     Prendre une photo

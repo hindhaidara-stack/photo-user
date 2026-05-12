@@ -8,14 +8,14 @@
         </button>
       </mat-toolbar>
     }
-    <app-home (takePhoto)="openCamera()" />
+    <app-home (takePhoto)="openCamera()" (openPhoto)="openPhoto($event)" />
   }
   @case ('camera') {
     <app-camera (captured)="onCaptured($event)" (closed)="onCameraClosed()" />
   }
   @case ('detail') {
-    @if (currentBlob(); as blob) {
-      <app-photo-detail [blob]="blob" (back)="backToHome()" />
+    @if (selectedPhoto(); as photo) {
+      <app-photo-detail [photo]="photo" (back)="backToHome()" />
     }
   }
 }

@@ -6,6 +6,8 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { CameraComponent } from './components/camera/camera.component';
 import { HomeComponent } from './components/home/home.component';
 import { PhotoDetailComponent } from './components/photo-detail/photo-detail.component';
+import { Photo } from './models/photo.model';
+import { PhotoStorageService } from './services/photo-storage.service';
 
 type View = 'home' | 'camera' | 'detail';
 
@@ -24,15 +26,18 @@ type View = 'home' | 'camera' | 'detail';
   styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit {
+  private readonly storage = inject(PhotoStorageService);
   private readonly snackBar = inject(MatSnackBar);
 
   readonly view = signal<View>('home');
-  readonly currentBlob = signal<Blob | null>(null);
+  readonly selectedPhoto = signal<Photo | null>(null);
   readonly canInstall = signal(false);
 
   private deferredInstallPrompt: BeforeInstallPromptEvent | null = null;
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
+    await this.storage.loadAll();
+
     window.addEventListener('beforeinstallprompt', (e: Event) => {
       e.preventDefault();
       this.deferredInstallPrompt = e as BeforeInstallPromptEvent;
@@ -53,17 +58,31 @@ export class AppComponent implements OnInit {
     this.view.set('camera');
   }
 
-  onCaptured(blob: Blob): void {
-    this.currentBlob.set(blob);
-    this.view.set('detail');
+  async onCaptured(blob: Blob): Promise<void> {
+    try {
+      const photo = await this.storage.addPhoto(blob);
+      this.selectedPhoto.set(photo);
+      this.view.set('detail');
+    } catch (err) {
+      console.error(err);
+      this.snackBar.open("Impossible d'enregistrer la photo", 'OK', { duration: 2500 });
+      this.view.set('home');
+    }
   }
 
   onCameraClosed(): void {
     if (this.view() === 'camera') this.view.set('home');
   }
 
+  openPhoto(id: number): void {
+    const photo = this.storage.photos().find((p) => p.id === id);
+    if (!photo) return;
+    this.selectedPhoto.set(photo);
+    this.view.set('detail');
+  }
+
   backToHome(): void {
-    this.currentBlob.set(null);
+    this.selectedPhoto.set(null);
     this.view.set('home');
   }
 
