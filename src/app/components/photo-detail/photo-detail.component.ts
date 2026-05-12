@@ -11,11 +11,9 @@ import {
   signal,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { EmailDialogComponent, EmailDialogData } from '../email-dialog/email-dialog.component';
 
 @Component({
   selector: 'app-photo-detail',
@@ -29,7 +27,6 @@ export class PhotoDetailComponent implements OnChanges, OnDestroy {
   @Input({ required: true }) blob!: Blob;
   @Output() readonly back = new EventEmitter<void>();
 
-  private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
 
   readonly imageUrl = signal<string>('');
@@ -56,6 +53,14 @@ export class PhotoDetailComponent implements OnChanges, OnDestroy {
   }
 
   async saveToGallery(): Promise<void> {
+    await this.shareOrDownload('Photo enregistrée');
+  }
+
+  async share(): Promise<void> {
+    await this.shareOrDownload();
+  }
+
+  private async shareOrDownload(successMessage?: string): Promise<void> {
     const filename = `photo_${Date.now()}.jpg`;
     const type = this.blob.type || 'image/jpeg';
     const file = new File([this.blob], filename, { type });
@@ -63,13 +68,16 @@ export class PhotoDetailComponent implements OnChanges, OnDestroy {
     if (navigator.canShare?.({ files: [file] })) {
       try {
         await navigator.share({ files: [file], title: 'Photo' });
-        this.snackBar.open('Photo enregistrée', 'OK', { duration: 2000 });
+        if (successMessage) {
+          this.snackBar.open(successMessage, 'OK', { duration: 2000 });
+        }
         return;
       } catch (err: unknown) {
         if (err instanceof Error && err.name === 'AbortError') return;
       }
     }
 
+    // Fallback desktop : téléchargement classique
     const url = URL.createObjectURL(this.blob);
     const a = document.createElement('a');
     a.href = url;
@@ -79,13 +87,5 @@ export class PhotoDetailComponent implements OnChanges, OnDestroy {
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     this.snackBar.open('Photo téléchargée', 'OK', { duration: 2000 });
-  }
-
-  openEmail(): void {
-    this.dialog.open<EmailDialogComponent, EmailDialogData, boolean>(EmailDialogComponent, {
-      data: { blob: this.blob },
-      width: '420px',
-      maxWidth: '95vw',
-    });
   }
 }
