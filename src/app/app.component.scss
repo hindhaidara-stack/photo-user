@@ -2,6 +2,7 @@
   flex: 1 1 auto;
 }
 
-.title {
-  font-weight: 500;
+:host {
+  display: block;
+  min-height: 100dvh;
 }

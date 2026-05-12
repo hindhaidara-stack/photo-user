@@ -1,15 +1,38 @@
 html, body {
   height: 100%;
+  overflow-x: hidden;
 }
 
 body {
   margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-family: Roboto, "Helvetica Neue", -apple-system, BlinkMacSystemFont, sans-serif;
   background: #fafafa;
   color: rgba(0, 0, 0, 0.87);
   -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 * {
   box-sizing: border-box;
+}
+
+// Empeche le zoom iOS quand on focus un input (taille >= 16px)
+input,
+textarea,
+select {
+  font-size: 16px;
+}
+
+// Toolbar Material : prendre en compte le safe-area-inset en haut (notch iOS)
+mat-toolbar {
+  padding-top: env(safe-area-inset-top, 0) !important;
+  height: calc(64px + env(safe-area-inset-top, 0)) !important;
+}
+
+// Dialog Material : sur petit ecran, prendre toute la largeur dispo
+@media (max-width: 480px) {
+  .mat-mdc-dialog-container .mdc-dialog__surface {
+    border-radius: 12px;
+  }
 }

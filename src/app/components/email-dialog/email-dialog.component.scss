@@ -1,10 +1,15 @@
 .email-form {
   display: flex;
   flex-direction: column;
-  min-width: 280px;
   padding-top: 8px;
+  gap: 4px;
+  width: 100%;
 }
 
 mat-form-field {
   width: 100%;
+}
+
+::ng-deep .mat-mdc-dialog-actions button {
+  min-height: 40px;
 }
