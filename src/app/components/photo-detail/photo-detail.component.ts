@@ -60,6 +60,12 @@ export class PhotoDetailComponent implements OnChanges, OnDestroy {
     await this.shareOrDownload();
   }
 
+  delete(): void {
+    if (!confirm('Supprimer cette photo ?')) return;
+    this.snackBar.open('Photo supprimée', 'OK', { duration: 1800 });
+    this.back.emit();
+  }
+
   private async shareOrDownload(successMessage?: string): Promise<void> {
     const filename = `photo_${Date.now()}.jpg`;
     const type = this.blob.type || 'image/jpeg';
