@@ -52,21 +52,32 @@ export class PhotoDetailComponent implements OnChanges, OnDestroy {
     }
   }
 
-  async saveToGallery(): Promise<void> {
-    await this.shareOrDownload('Photo enregistrée');
+  /**
+   * Sauvegarde directe : declenche un telechargement.
+   * Android : la photo va dans /Downloads, Google Photos l'indexe et l'affiche dans la galerie.
+   * iOS Safari : la photo va dans l'app Fichiers (Apple ne permet pas d'ajouter directement
+   * a Photos depuis une PWA — il faudrait passer par "Partager > Enregistrer l'image").
+   * Desktop : telechargement classique.
+   */
+  saveToGallery(): void {
+    const filename = `photo_${Date.now()}.jpg`;
+    const url = URL.createObjectURL(this.blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    this.snackBar.open('Photo enregistrée', 'OK', { duration: 2000 });
   }
 
+  /**
+   * Ouvre le menu natif de partage : WhatsApp, Mail, Drive, etc.
+   * Sur desktop, retombe sur un telechargement.
+   */
   async share(): Promise<void> {
-    await this.shareOrDownload();
-  }
-
-  delete(): void {
-    if (!confirm('Supprimer cette photo ?')) return;
-    this.snackBar.open('Photo supprimée', 'OK', { duration: 1800 });
-    this.back.emit();
-  }
-
-  private async shareOrDownload(successMessage?: string): Promise<void> {
     const filename = `photo_${Date.now()}.jpg`;
     const type = this.blob.type || 'image/jpeg';
     const file = new File([this.blob], filename, { type });
@@ -74,16 +85,14 @@ export class PhotoDetailComponent implements OnChanges, OnDestroy {
     if (navigator.canShare?.({ files: [file] })) {
       try {
         await navigator.share({ files: [file], title: 'Photo' });
-        if (successMessage) {
-          this.snackBar.open(successMessage, 'OK', { duration: 2000 });
-        }
         return;
       } catch (err: unknown) {
         if (err instanceof Error && err.name === 'AbortError') return;
       }
+    } else {
+      this.snackBar.open('Partage non disponible — photo téléchargée', 'OK', { duration: 2500 });
     }
 
-    // Fallback desktop : telechargement classique
     const url = URL.createObjectURL(this.blob);
     const a = document.createElement('a');
     a.href = url;
@@ -92,6 +101,11 @@ export class PhotoDetailComponent implements OnChanges, OnDestroy {
     a.click();
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-    this.snackBar.open('Photo téléchargée', 'OK', { duration: 2000 });
+  }
+
+  delete(): void {
+    if (!confirm('Supprimer cette photo ?')) return;
+    this.snackBar.open('Photo supprimée', 'OK', { duration: 1800 });
+    this.back.emit();
   }
 }
