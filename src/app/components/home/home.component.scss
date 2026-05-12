@@ -2,15 +2,17 @@
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  padding: 24px 16px;
-  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0));
+  padding: 16px;
+  padding-top: calc(16px + env(safe-area-inset-top, 0));
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0));
   max-width: 900px;
   margin: 0 auto;
-  gap: 24px;
+  gap: 20px;
 }
 
 .gallery-section {
   flex: 1;
+  min-height: 0;
 }
 
 .gallery-title {
@@ -63,25 +65,48 @@
   display: block;
 }
 
+// Bouton CTA principal : force la couleur primary solide (Material 3 utilise du tonal par defaut)
 .capture {
   align-self: center;
   min-height: 56px;
   font-size: 16px;
-  padding: 0 24px;
+  font-weight: 500;
+  padding: 0 28px;
   border-radius: 28px;
-  position: sticky;
-  bottom: calc(env(safe-area-inset-bottom, 0) + 16px);
+  margin-top: 8px;
+  --mdc-extended-fab-container-color: #1976d2;
+  --mdc-extended-fab-label-text-color: #ffffff;
+  --mat-fab-extended-foreground-color: #ffffff;
+  background-color: #1976d2 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+
+  mat-icon {
+    color: #ffffff;
+  }
 }
 
 @media (max-width: 600px) {
   .home-page {
-    padding: 16px;
+    padding: 12px;
+    padding-top: calc(12px + env(safe-area-inset-top, 0));
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0));
   }
 
   .capture {
     width: 100%;
     max-width: 320px;
-    min-height: 64px;
+    min-height: 60px;
     font-size: 17px;
+  }
+
+  .gallery-title {
+    font-size: 16px;
+    margin: 4px 0 10px;
+  }
+
+  .gallery-grid {
+    grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+    gap: 6px;
   }
 }

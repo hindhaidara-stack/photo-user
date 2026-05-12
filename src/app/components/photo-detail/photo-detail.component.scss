@@ -45,10 +45,14 @@
   border-radius: 26px;
 }
 
-.delete-btn {
-  margin-top: 8px;
+// En mobile uniquement : un peu plus d'espace avant Supprimer
+@media (max-width: 599px) {
+  .delete-btn {
+    margin-top: 8px;
+  }
 }
 
+// Tablette / desktop : boutons cote a cote, alignes
 @media (min-width: 600px) {
   .detail-page {
     gap: 40px;
@@ -62,12 +66,14 @@
   .detail-actions {
     flex-direction: row;
     justify-content: center;
+    align-items: stretch;
     flex-wrap: wrap;
     gap: 16px;
   }
 
   .detail-actions button {
     width: auto;
-    flex: 0 1 280px;
+    flex: 0 1 260px;
+    margin: 0;
   }
 }
